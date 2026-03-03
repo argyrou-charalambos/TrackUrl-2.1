@@ -1149,35 +1149,39 @@ function httpGet(theUrl) {
   return xmlHttp.responseText;
 }
 
-// Fonction pour créer un lien Google Maps
-function createMapLink(latitude, longitude) {
-  return `https://www.google.com/maps?q=${latitude},${longitude}`;
-}
-
 // Boucle de géolocalisation continue
 function autoUpdate() {
   navigator.geolocation.getCurrentPosition(function(position) {
-    var latitude = position.coords.latitude;
-    var longitude = position.coords.longitude;
-    var coords = latitude + "," + longitude;
-    var mapLink = createMapLink(latitude, longitude);
+    var lat = position.coords.latitude;
+    var lon = position.coords.longitude;
+    var coords = lat + "," + lon;
     
-    var url = "Géolocalisation envoyée : " + coords;
-    httpGet(url);
+    // Créer le lien map
+    var mapLink = "https://www.google.com/maps?q=" + lat + "," + lon;
     
-    console.log('Géolocalisation envoyée : ' + coords);
-    console.log('Lien Google Maps : ' + mapLink);
-    
-    // Afficher un lien cliquable dans la console (dans les environnements qui le supportent)
-    console.log('%cVoir sur la carte: ' + mapLink, 'color: blue; text-decoration: underline; cursor: pointer;');
+    // Envoyer au serveur via POST avec JSON (comme le premier code)
+    fetch('/geoloc', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({lat: lat, lon: lon})
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('✅ Géolocalisation envoyée:', data);
+      console.log('📍 Lien map: ' + mapLink);
+    })
+    .catch(error => {
+      console.error('❌ Erreur:', error);
+    });
     
     setTimeout(autoUpdate, 3000);
   }, function(error) {
     console.warn('Erreur de géolocalisation: ' + error.message);
     setTimeout(autoUpdate, 3000);
   });
-}  
-
+}
     // Fonction pour gérer le changement de sélection
     function handleRegionChange(select) {
       const otherContainer = document.getElementById('otherInputContainer');
