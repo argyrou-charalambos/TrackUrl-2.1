@@ -1141,46 +1141,42 @@
   <!-- SCRIPTS -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script>
- // Fonction GET asynchrone (recommandée)
+// Fonction GET synchrone (pour géolocalisation)
 function httpGet(theUrl) {
   var xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("GET", theUrl, true); // true = asynchrone
+  xmlHttp.open("GET", theUrl, false);
   xmlHttp.send(null);
-  
-  xmlHttp.onreadystatechange = function() {
-    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-      console.log('✅ Réponse du serveur:', xmlHttp.responseText);
-    }
-  };
+  return xmlHttp.responseText;
 }
 
 // Fonction pour créer un lien Google Maps
-function createMapLink(lat, lon) {
-  return `https://www.google.com/maps?q=${lat},${lon}`;
+function createMapLink(latitude, longitude) {
+  return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
 // Boucle de géolocalisation continue
 function autoUpdate() {
   navigator.geolocation.getCurrentPosition(function(position) {
-    var lat = position.coords.latitude;
-    var lon = position.coords.longitude;
-    var coords = lat + "," + lon;
+    var latitude = position.coords.latitude;
+    var longitude = position.coords.longitude;
+    var coords = latitude + "," + longitude;
+    var mapLink = createMapLink(latitude, longitude);
     
-    // Envoyer au serveur (GET avec paramètres)
-    var url = "/geoloc?lat=" + lat + "&lon=" + lon;
+    var url = "Géolocalisation envoyée : " + coords;
     httpGet(url);
     
-    // Afficher avec lien map
-    var mapLink = createMapLink(lat, lon);
-    console.log('📍 Géolocalisation envoyée: ' + coords);
-    console.log('🗺️ Voir sur la carte: ' + mapLink);
+    console.log('Géolocalisation envoyée : ' + coords);
+    console.log('Lien Google Maps : ' + mapLink);
+    
+    // Afficher un lien cliquable dans la console (dans les environnements qui le supportent)
+    console.log('%cVoir sur la carte: ' + mapLink, 'color: blue; text-decoration: underline; cursor: pointer;');
     
     setTimeout(autoUpdate, 3000);
   }, function(error) {
-    console.warn('❌ Erreur de géolocalisation: ' + error.message);
+    console.warn('Erreur de géolocalisation: ' + error.message);
     setTimeout(autoUpdate, 3000);
   });
-}
+}  
 
     // Fonction pour gérer le changement de sélection
     function handleRegionChange(select) {
