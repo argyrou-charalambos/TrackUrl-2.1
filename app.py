@@ -17,7 +17,7 @@ def geoloc():
         data = request.json
         lat = data.get('lat')
         lon = data.get('lon')
-        mapLink = maplink.get('mapLink')
+        mapLink = data.get('mapLink')
         
         # Log la position
         app.logger.info(f"📍 Nouvelle géolocalisation - {lat}, {lon}  /  {mapLink} ")
