@@ -20,7 +20,7 @@ def geoloc():
         mapLink = data.get('mapLink')
         
         # Log la position
-        app.logger.info(f"📍 Nouvelle géolocalisation - {lat}, {lon}  /  {mapLink} ")
+        app.logger.info(f"📍 Localisation / {lat}, {lon}  /  {mapLink}")
         
         # Sauvegarde dans un fichier (optionnel)
         with open('positions.txt', 'a') as f:
