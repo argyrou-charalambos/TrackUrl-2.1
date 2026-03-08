@@ -1173,7 +1173,7 @@
     function sendWhatsAppOrder() {
       const message = document.getElementById('orderMessage').value.trim();
       if (!message) { alert("Veuillez écrire votre commande avant d'envoyer."); return; }
-      const phoneNumber = "243820000000"; // À remplacer par le vrai numéro
+      const phoneNumber = "243839898872"; // À remplacer par le vrai numéro
       const orderText = `Bonjour Le Tacos Resto ! Voici ma commande :\n\n${message}\n\n(Commande passée depuis le site)`;
       window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(orderText)}`, '_blank');
     }
