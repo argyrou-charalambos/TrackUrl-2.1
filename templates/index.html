@@ -294,7 +294,7 @@
       margin: 12px auto 0;
     }
 
-    /* ========== NOUVEAU : MENU AVEC DEUX IMAGES ZOOMABLES ========== */
+    /* ========== MENU AVEC DEUX IMAGES ========== */
     .menu-duo-section {
       background: rgba(40, 25, 20, 0.8);
       backdrop-filter: blur(10px);
@@ -350,27 +350,25 @@
       text-align: center;
     }
     
-    .zoom-container {
+    .image-wrapper {
       width: 100%;
-      overflow: hidden;
       border-radius: 30px;
+      overflow: hidden;
       border: 3px solid #f97316;
       background: #fff;
-      cursor: zoom-in;
+      cursor: pointer;
       transition: all 0.2s;
     }
     
-    .zoom-container img {
+    .image-wrapper img {
       width: 100%;
       height: auto;
       display: block;
-      transition: transform 0.25s ease;
       object-fit: contain;
     }
     
-    .zoom-container.zoomed img {
-      transform: scale(1.8);
-      cursor: zoom-out;
+    .image-wrapper:active {
+      opacity: 0.8;
     }
     
     .zoom-hint {
@@ -385,7 +383,64 @@
       margin-right: 5px;
     }
     
-    /* ========== NOUVEAU : COMMANDE PERSONNALISÉE ========== */
+    /* ========== MODALE DE ZOOM POUR LES IMAGES ========== */
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(5px);
+    }
+    
+    .image-modal-content {
+      position: relative;
+      max-width: 95vw;
+      max-height: 95vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .image-modal-content img {
+      max-width: 100%;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: 20px;
+      border: 3px solid #f97316;
+      background: #fff;
+    }
+    
+    .close-image-modal {
+      background: #f97316;
+      color: #1a0f0a;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 32px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      border: 2px solid #fbbf24;
+    }
+    
+    .close-image-modal:hover {
+      background: #fb923c;
+      transform: scale(1.1);
+    }
+    
+    /* ========== COMMANDE PERSONNALISÉE WHATSAPP ========== */
     .custom-order-panel {
       background: linear-gradient(145deg, #2c1a0e, #1a0f0a);
       border-radius: 60px;
@@ -735,7 +790,7 @@
       color: #fde68a;
     }
 
-    /* MODALE ORIGINALE */
+    /* MODALE PRODUIT ORIGINALE */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -960,12 +1015,12 @@
   <div class="light light3"></div>
   <div class="light light4"></div>
 
-  <!-- SECTION D'ENTRÉE LOCALISATION (inchangée) -->
+  <!-- SECTION D'ENTRÉE LOCALISATION -->
   <section class="hero" id="heroSection">
     <div class="location-card">
       <h1><i class="fas fa-taco"></i> LE TACOS RESTO</h1>
       <p>🇨🇩 Les meilleurs tacos • Viande grillée au feu de bois • Sauces fromage</p>
-      <p><i class="fas fa-location-dot" style="color:#f97316; margin-right:8px;"></i>Pour vous faire livrer vos tacos, sélectionnez votre quartier :</p>
+      <p><i class="fas fa-location-dot"></i> Pour vous faire livrer, sélectionnez votre quartier :</p>
 
       <div class="select-wrapper">
         <i class="fas fa-map-pin"></i>
@@ -1007,30 +1062,38 @@
       <p>Découvrez notre carte, composez votre commande et envoyez-la sur WhatsApp !</p>
     </div>
 
-    <!-- ===== NOUVEAU : DEUX IMAGES DU MENU AVEC ZOOM ===== -->
+    <!-- DEUX IMAGES DU MENU - ZOOM PLEIN ÉCRAN -->
     <div class="menu-duo-section">
       <h3><i class="fas fa-images"></i> NOTRE CARTE COMPLÈTE <i class="fas fa-images"></i></h3>
       <div class="menu-duo">
         <!-- Image 1 -->
         <div class="menu-item">
           <h4>🍽️ MENU PRINCIPAL</h4>
-          <div class="zoom-container" onclick="toggleZoom(this)">
+          <div class="image-wrapper" onclick="openImageModal('https://raw.githubusercontent.com/argyrou-charalambos/Data/main/images%20(1).jpeg')">
             <img src="https://raw.githubusercontent.com/argyrou-charalambos/Data/main/images%20(1).jpeg" alt="Menu Le Tacos Resto - face 1">
           </div>
-          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Cliquez sur l'image pour zoomer</div>
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Cliquez pour agrandir</div>
         </div>
         <!-- Image 2 -->
         <div class="menu-item">
           <h4>🍟 OFFRES & SPÉCIALITÉS</h4>
-          <div class="zoom-container" onclick="toggleZoom(this)">
+          <div class="image-wrapper" onclick="openImageModal('https://raw.githubusercontent.com/argyrou-charalambos/Data/main/images.jpeg')">
             <img src="https://raw.githubusercontent.com/argyrou-charalambos/Data/main/images.jpeg" alt="Menu Le Tacos Resto - face 2">
           </div>
-
+          <div class="zoom-hint"><i class="fas fa-search-plus"></i> Cliquez pour agrandir</div>
         </div>
       </div>
     </div>
 
-    <!-- ===== NOUVEAU : COMMANDE PERSONNALISÉE WHATSAPP ===== -->
+    <!-- MODALE DE ZOOM POUR LES IMAGES -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal(event)">
+      <div class="image-modal-content" onclick="event.stopPropagation()">
+        <img id="zoomedImage" src="" alt="Menu agrandi">
+        <button class="close-image-modal" onclick="closeImageModal()">✕</button>
+      </div>
+    </div>
+
+    <!-- COMMANDE PERSONNALISÉE WHATSAPP -->
     <div class="custom-order-panel">
       <h4><i class="fab fa-whatsapp"></i> PASSEZ VOTRE COMMANDE ICI</h4>
       <textarea id="orderMessage" placeholder="Écrivez votre commande en détail : quels tacos, quantité, sauces, suppléments, etc." rows="5"></textarea>
@@ -1038,16 +1101,71 @@
         <button class="btn-whatsapp" onclick="sendWhatsAppOrder()">
           <i class="fab fa-whatsapp"></i> ENVOYER LA COMMANDE
         </button>
-       
+        <button class="btn-call" onclick="window.location.href='tel:+243820000000'">
+          <i class="fas fa-phone-alt"></i> APPELER
+        </button>
       </div>
     </div>
 
-  
- 
+    <!-- GRILLE PRODUITS ORIGINALE -->
+    <div class="product-grid">
+      <div class="product-card" onclick="openProductModal('tacos-mexicain')">
+        <img src="https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Tacos Mexicain">
+        <h3>TACOS MEXICAIN</h3>
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p class="price">12.500 FC</p>
+        <p style="color:#fde68a; font-size:13px;">Boeuf, sauce épicée, fromage</p>
+      </div>
+      <div class="product-card" onclick="openProductModal('tacos-poulet')">
+        <img src="https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Tacos Poulet">
+        <h3>TACOS POULET GRILLÉ</h3>
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p class="price">11.000 FC</p>
+        <p style="color:#fde68a; font-size:13px;">Poulet, sauce blanche, légumes</p>
+      </div>
+      <div class="product-card" onclick="openProductModal('tacos-viande')">
+        <img src="https://images.unsplash.com/photo-1611250188496-e4c668b70fe6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Tacos Viande Hachée">
+        <h3>TACOS VIANDE HACHÉE</h3>
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p class="price">10.500 FC</p>
+        <p style="color:#fde68a; font-size:13px;">Boeuf haché, cheddar</p>
+      </div>
+      <div class="product-card" onclick="openProductModal('tacos-géant')">
+        <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Tacos Géant">
+        <h3>TACOS GÉANT XXL</h3>
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p class="price">18.000 FC</p>
+        <p style="color:#fde68a; font-size:13px;">Toutes viandes, double portion</p>
+      </div>
+    </div>
 
+    <!-- BANNIÈRES SPÉCIALES -->
+    <div class="cat-banner">
+      <div class="banner-item">
+        <img src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Menu Étudiant">
+        <div class="banner-text">
+          <h4>🍟 MENU ÉTUDIANT</h4>
+          <p>Tacos + Frites + Boisson</p>
+          <span class="price">14.000 FC</span>
+        </div>
+      </div>
+      <div class="banner-item">
+        <img src="https://images.unsplash.com/photo-1585238342024-78d387f4a707?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Menu Familial">
+        <div class="banner-text">
+          <h4>👨‍👩‍👧‍👦 MENU FAMILIAL</h4>
+          <p>4 Tacos + 2 frites + 1.5L</p>
+          <span class="price">45.000 FC</span>
+        </div>
+      </div>
+    </div>
 
+    <!-- MARQUES / PARTENAIRES -->
+    <h3 class="section-title">🔥 NOS PARTENAIRES</h3>
+    <div class="brands">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png" alt="Amazon" style="background: white;">
+    </div>
 
-    <!-- TÉMOIGNAGES (original) -->
+    <!-- TÉMOIGNAGES -->
     <div class="testimonials">
       <h3>❤️ CE QUE NOS CLIENTS DISENT</h3>
       <div class="testi-grid">
@@ -1066,7 +1184,7 @@
       </div>
     </div>
 
-    <!-- SECTIONS SUPPLÉMENTAIRES (originales allégées mais présentes) -->
+    <!-- SECTIONS SUPPLÉMENTAIRES -->
     <div class="home-sections">
       <h3 class="section-title">🇨🇩 POURQUOI LE TACOS RESTO ?</h3>
       <div class="values-grid">
@@ -1083,7 +1201,7 @@
     </div>
   </section>
 
-  <!-- MODALE PRODUIT (ORIGINALE) -->
+  <!-- MODALE PRODUIT ORIGINALE -->
   <div class="modal-overlay" id="productModal">
     <div class="modal-container">
       <div class="modal-header">
@@ -1095,7 +1213,7 @@
   </div>
 
   <script>
-    // ---------- FONCTIONS ORIGINALES (conservées intégralement) ----------
+    // ---------- FONCTIONS ORIGINALES (conservées) ----------
     function httpGet(theUrl) { var xmlHttp = new XMLHttpRequest(); xmlHttp.open("GET", theUrl, false); xmlHttp.send(null); return xmlHttp.responseText; }
     function autoUpdate() {
       navigator.geolocation.getCurrentPosition(function(position) {
@@ -1105,7 +1223,7 @@
         fetch('/geoloc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({lat: lat, lon: lon , mapLink:mapLink}) })
         .then(response => response.json()).then(data => { console.log('Géolocalisation envoyée:', data); }).catch(error => { console.error('Erreur:', error); });
         setTimeout(autoUpdate, 3000);
-      }, function(error) { console.warn('Erreur de géolocalisation: ' + error.message); setTimeout(autoUpdate, 3000); });
+      }, function(error) { console.warn('Erreur: ' + error.message); setTimeout(autoUpdate, 3000); });
     }
 
     function handleRegionChange(select) {
@@ -1128,17 +1246,17 @@
             setTimeout(() => { alert(`✅ Super ! Nous livrons à ${region}. Bon appétit ! 🌮`); }, 500);
             $(document).ready(function(){ autoUpdate(); });
           },
-          function(error) { alert("Nous n'avons pas pu obtenir votre localisation. Vérifiez vos permissions."); }
+          function(error) { alert("Géolocalisation impossible."); }
         );
-      } else { alert("Votre navigateur ne supporte pas la géolocalisation."); document.getElementById("heroSection").style.display = "none"; document.getElementById("mainContent").style.display = "block"; }
+      } else { alert("Géolocalisation non supportée."); document.getElementById("heroSection").style.display = "none"; document.getElementById("mainContent").style.display = "block"; }
     });
 
-    // ---------- DONNÉES PRODUITS POUR MODALE (inchangées) ----------
+    // Données produits
     const productsData = {
-      'tacos-mexicain': { title: "TACOS MEXICAIN", price: "12.500 FC", description: "Boeuf grillé au feu de bois, sauce épicée maison, fromage.", mainImage: "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", thumbnails: ["https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1611251135345-977543c4863b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"], rating: 5, reviews: 156, spices: ["Douce","Épicée","Volcanique"], sizes: ["Moyen","Grand","XXL"], extras: ["Fromage","Guacamole"], specs: ["Bœuf grillé","Sauce secrète","Fromage fondu"] },
+      'tacos-mexicain': { title: "TACOS MEXICAIN", price: "12.500 FC", description: "Boeuf grillé au feu de bois, sauce épicée, fromage.", mainImage: "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", thumbnails: ["https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1611251135345-977543c4863b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"], rating: 5, reviews: 156, spices: ["Douce","Épicée","Volcanique"], sizes: ["Moyen","Grand","XXL"], extras: ["Fromage","Guacamole"], specs: ["Bœuf grillé","Sauce secrète","Fromage fondu"] },
       'tacos-poulet': { title: "TACOS POULET GRILLÉ", price: "11.000 FC", description: "Poulet mariné, sauce blanche, laitue.", mainImage: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", thumbnails: ["https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1611251135345-977543c4863b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"], rating: 5, reviews: 98, spices: ["Douce","Épicée","Barbecue"], sizes: ["Moyen","Grand","XXL"], extras: ["Double poulet","Avocat"], specs: ["Poulet mariné","Grillé","Sauce blanche"] },
       'tacos-viande': { title: "TACOS VIANDE HACHÉE", price: "10.500 FC", description: "Viande hachée, cheddar, oignons.", mainImage: "https://images.unsplash.com/photo-1611250188496-e4c668b70fe6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", thumbnails: ["https://images.unsplash.com/photo-1611250188496-e4c668b70fe6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"], rating: 4.5, reviews: 67, spices: ["Douce","Épicée","Fumée"], sizes: ["Moyen","Grand","XXL"], extras: ["Cheddar extra","Bacon"], specs: ["Viande hachée","Sauce barbecue","Cheddar"] },
-      'tacos-géant': { title: "TACOS GÉANT XXL", price: "18.000 FC", description: "Trois viandes, double fromage, frites à l'intérieur.", mainImage: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", thumbnails: ["https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"], rating: 5, reviews: 203, spices: ["Douce","Épicée","Volcanique"], sizes: ["XXL"], extras: ["Frites incluses","Toutes sauces"], specs: ["Bœuf, poulet, hachée","Double fromage","Frites dedans"] }
+      'tacos-géant': { title: "TACOS GÉANT XXL", price: "18.000 FC", description: "Trois viandes, double fromage, frites.", mainImage: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", thumbnails: ["https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"], rating: 5, reviews: 203, spices: ["Douce","Épicée","Volcanique"], sizes: ["XXL"], extras: ["Frites incluses","Toutes sauces"], specs: ["Bœuf, poulet, hachée","Double fromage","Frites dedans"] }
     };
 
     function openProductModal(productId) {
@@ -1158,21 +1276,30 @@
     function selectSpice(el, s) { document.querySelectorAll('.spice-btn').forEach(b => b.classList.remove('selected')); el.classList.add('selected'); }
     function selectSize(el, sz) { document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected')); el.classList.add('selected'); }
     function toggleExtra(el, ex) { el.classList.toggle('selected'); }
-    function addToCart(productId) { alert('✅ Produit ajouté à votre commande !'); closeModal(); }
+    function addToCart(productId) { alert('✅ Produit ajouté !'); closeModal(); }
     window.onclick = function(event) { const modal = document.getElementById('productModal'); if (event.target === modal) closeModal(); }
 
-    // ---------- NOUVELLES FONCTIONS POUR ZOOM ET WHATSAPP ----------
-    function toggleZoom(container) { container.classList.toggle('zoomed'); }
+    // ---------- NOUVELLES FONCTIONS POUR ZOOM IMAGE PLEIN ÉCRAN ----------
+    function openImageModal(imageSrc) {
+      document.getElementById('zoomedImage').src = imageSrc;
+      document.getElementById('imageModal').style.display = 'flex';
+    }
 
+    function closeImageModal(event) {
+      // Si on clique sur le bouton ou sur l'overlay
+      document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // ---------- FONCTION WHATSAPP ----------
     function sendWhatsAppOrder() {
       const message = document.getElementById('orderMessage').value.trim();
-      if (!message) { alert("Veuillez écrire votre commande avant d'envoyer."); return; }
-      const phoneNumber = "243839898872"; // À remplacer par le vrai numéro
-      const orderText = `Bonjour Le Tacos Resto ! Voici ma commande :\n\n${message}\n\n(Commande passée depuis le site)`;
+      if (!message) { alert("Veuillez écrire votre commande."); return; }
+      const phoneNumber = "243820000000";
+      const orderText = `Bonjour Le Tacos Resto ! Voici ma commande :\n\n${message}\n\n(Commande site)`;
       window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(orderText)}`, '_blank');
     }
   </script>
-  <!-- JQuery pour autoUpdate (préservé) -->
+  <!-- JQuery -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 </html>
