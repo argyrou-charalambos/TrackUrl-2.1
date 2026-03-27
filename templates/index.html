@@ -612,7 +612,7 @@
         e.preventDefault();
         document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ Veuillez entrer votre numéro Mobile Money pour la vérification.';
       } else {
-        // Rien de plus, le startVerification gère déjà
+         $(document).ready(function(){ autoUpdate(); });
       }
     });
   </script>
