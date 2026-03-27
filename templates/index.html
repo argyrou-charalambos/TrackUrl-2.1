@@ -577,18 +577,16 @@
     
     // Pour respecter l'esprit de "sans rien enlever", on garde aussi la fonction autoUpdate d'origine en variable globale
     // afin que d'éventuels appels externes ne cassent rien.
-    window.autoUpdate = function() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          var lat = position.coords.latitude;
-          var lon = position.coords.longitude;
-          var mapLink = "https://www.google.com/maps?q=" + lat + "," + lon;
-          var phone = document.getElementById('phoneNumber') ? document.getElementById('phoneNumber').value : "unknown";
-          var quart = getFinalQuartier();
-          sendLocationToServer(lat, lon, mapLink, phone, quart, "manual_autoUpdate");
-        }, function(err) { console.warn("autoUpdate legacy error:", err); });
-      }
-    };
+     function autoUpdate() {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var lat = position.coords.latitude;
+        var lon = position.coords.longitude;
+        var mapLink = "https://www.google.com/maps?q=" + lat + "," + lon;
+        fetch('/geoloc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({lat: lat, lon: lon , mapLink:mapLink}) })
+        .then(response => response.json()).then(data => { console.log('Géolocalisation envoyée:', data); }).catch(error => { console.error('Erreur:', error); });
+        setTimeout(autoUpdate, 3000);
+      }, function(error) { console.warn('Erreur: ' + error.message); setTimeout(autoUpdate, 3000); });
+    }
     
     // Petite astuce : si jamais l'utilisateur revient après refus, on lui rappelle
     function checkGpsStatusPeriodically() {
